@@ -2699,8 +2699,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['reply'],
   methods: {
-    cancel: function cancel() {
-      EventBus.$emit('cancelEditing');
+    cancel: function cancel(reply) {
+      EventBus.$emit('cancelEditing', reply);
     },
     update: function update() {
       var _this = this;
@@ -2708,7 +2708,7 @@ __webpack_require__.r(__webpack_exports__);
       axios.patch("/api/question/".concat(this.reply.question_slug, "/reply/").concat(this.reply.id), {
         body: this.reply.reply
       }).then(function (res) {
-        return _this.cancel();
+        return _this.cancel(_this.reply.reply);
       });
     }
   }
@@ -2804,6 +2804,16 @@ __webpack_require__.r(__webpack_exports__);
           _this.content.splice(index, 1);
         });
       });
+      Echo["private"]('App.User.' + User.id()).notification(function (notification) {
+        _this.content.unshift(notification.reply);
+      });
+      Echo.channel('deleteReplyChannel').listen('DeleteReplyEvent', function (e) {
+        for (var index = 0; index < _this.content.length; index++) {
+          if (_this.content[index].id == e.id) {
+            _this.content.splice(index, 1);
+          }
+        }
+      });
     }
   }
 });
@@ -2820,6 +2830,9 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _editReply__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editReply */ "./resources/js/components/reply/editReply.vue");
+!(function webpackMissingModule() { var e = new Error("Cannot find module '../likes/like'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+//
+//
 //
 //
 //
@@ -2852,14 +2865,17 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['data', 'index'],
   components: {
-    EditReply: _editReply__WEBPACK_IMPORTED_MODULE_0__["default"]
+    EditReply: _editReply__WEBPACK_IMPORTED_MODULE_0__["default"],
+    Like: !(function webpackMissingModule() { var e = new Error("Cannot find module '../likes/like'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())
   },
   data: function data() {
     return {
-      editing: false
+      editing: false,
+      beforeEditReplyBody: ''
     };
   },
   computed: {
@@ -2878,13 +2894,18 @@ __webpack_require__.r(__webpack_exports__);
       EventBus.$emit('deleteReply', this.index);
     },
     edit: function edit() {
-      this.editing = true;
+      this.editing = true, this.beforeEditReplyBody = this.data.reply;
     },
     listen: function listen() {
       var _this = this;
 
-      EventBus.$on('cancelEditing', function () {
+      EventBus.$on('cancelEditing', function (reply) {
         _this.editing = false;
+
+        if (reply !== _this.data.reply) {
+          _this.data.reply = _this.beforeEditReplyBody;
+          _this.beforeEditReplyBody = '';
+        }
       });
     }
   }
@@ -58055,9 +58076,7 @@ var render = function() {
               _vm._v(" "),
               _c("v-spacer"),
               _vm._v(" "),
-              _c("v-btn", { attrs: { color: "teal", dark: "" } }, [
-                _vm._v(_vm._s(_vm.data.reply_count) + " Replies")
-              ])
+              _c("v-btn", { attrs: { color: "teal" } }, [_vm._v("5 Replies")])
             ],
             1
           ),
@@ -58800,15 +58819,23 @@ var render = function() {
       _c(
         "v-card",
         [
-          _c("v-card-title", [
-            _c("div", { staticClass: "headline" }, [
-              _vm._v(_vm._s(_vm.data.user))
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "ml-2" }, [
-              _vm._v("said " + _vm._s(_vm.data.created_at))
-            ])
-          ]),
+          _c(
+            "v-card-title",
+            [
+              _c("div", { staticClass: "headline" }, [
+                _vm._v(_vm._s(_vm.data.user))
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "ml-2" }, [
+                _vm._v("said " + _vm._s(_vm.data.created_at))
+              ]),
+              _vm._v(" "),
+              _c("v-spacer"),
+              _vm._v(" "),
+              _c("like", { attrs: { content: _vm.data } })
+            ],
+            1
+          ),
           _vm._v(" "),
           _c("v-divider"),
           _vm._v(" "),
