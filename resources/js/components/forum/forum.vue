@@ -1,4 +1,5 @@
 <template>
+
   <v-container fluid grid-list-md>
     <v-layout row wrap>
       <v-flex xs8>
@@ -8,7 +9,6 @@
         :data=question
         ></question>
       </v-flex>
-
       <v-flex xs4>
         <app-sidebar></app-sidebar>
       </v-flex>
@@ -26,6 +26,7 @@ export default {
     }
   },
   components:{question,AppSidebar},
+  
   created(){
     axios.get('/api/question')
     .then(res => this.questions = res.data.data)
@@ -33,5 +34,6 @@ export default {
   }
 }
 </script>
+
 <style>
 </style>

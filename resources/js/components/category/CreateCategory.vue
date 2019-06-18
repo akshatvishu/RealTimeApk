@@ -12,7 +12,7 @@
       </v-form>
 
       <v-card>
-          <v-toolbar color="purple" dark dense>
+          <v-toolbar color="indigo" dark dense>
           <v-toolbar-title>Categories</v-toolbar-title>
         </v-toolbar>
 
